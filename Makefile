@@ -1,2 +1,2 @@
 build:
-	go build github.com/dreamscached/pika
+	go build -ldflags "-s -w" github.com/dreamscached/pika
