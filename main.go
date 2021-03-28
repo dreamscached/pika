@@ -10,7 +10,7 @@ import (
 
 func main() {
 	log.Info("Initializing Discord bot...")
-	bot, err := discordgo.New("Bot " + os.Getenv("API_TOKEN"))
+	bot, err := discordgo.New("Bot " + apiToken)
 	if err != nil {
 		log.Error("There was an error authenticating with token: " + err.Error())
 		os.Exit(2)
@@ -21,6 +21,18 @@ func main() {
 	err = bot.Open()
 	if err != nil {
 		log.Error("There was an error starting up the bot: " + err.Error())
+		os.Exit(2)
+	}
+
+	err = bot.UpdateStatusComplex(discordgo.UpdateStatusData{
+		Activities: []*discordgo.Activity{{
+			Name: activityString,
+			Type: activityType,
+		}},
+		Status: string(onlineStatus),
+	})
+	if err != nil {
+		log.Error("There was an error updating bot presence: " + err.Error())
 		os.Exit(2)
 	}
 
@@ -40,11 +52,11 @@ func main() {
 }
 
 func onMessage(session *discordgo.Session, event *discordgo.MessageCreate) {
-	if event.ChannelID != "825666443675697172" {
+	if event.ChannelID != submissionsChannelId {
 		return
 	}
 
-	err := NewPost(session, "825667478519545906", event.Message)
+	err := NewPost(session, event.Message)
 	if err != nil {
 		if _, ok := err.(*NoImagesError); ok {
 			// Ignored

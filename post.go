@@ -54,7 +54,7 @@ func getImageURLs(message *discordgo.Message) []*Image {
 	return images
 }
 
-func NewPost(session *discordgo.Session, channelId string, message *discordgo.Message) error {
+func NewPost(session *discordgo.Session, message *discordgo.Message) error {
 	images := getImageURLs(message)
 
 	if len(images) == 0 {
@@ -87,12 +87,12 @@ func NewPost(session *discordgo.Session, channelId string, message *discordgo.Me
 			nickname = member.Nick
 		}
 
-		_, err = session.ChannelMessageSendEmbed(channelId, &discordgo.MessageEmbed{
+		_, err = session.ChannelMessageSendEmbed(galleryChannelId, &discordgo.MessageEmbed{
 			Type:  discordgo.EmbedTypeRich,
 			Color: 44678,
 			Footer: &discordgo.MessageEmbedFooter{
 				Text: fmt.Sprintf(
-					"Image sent by %s at %s with a file size of %s and a size of %d×%d",
+					footerText,
 					nickname, timestamp.Format("Mon Jan _2 2006 15:04:05 MST"), size,
 					image.Width, image.Height,
 				),
@@ -101,9 +101,13 @@ func NewPost(session *discordgo.Session, channelId string, message *discordgo.Me
 				URL: image.URL,
 			},
 		})
-
 		if err != nil {
 			return errors.New("could not send message embed: " + err.Error())
+		}
+
+		err = session.MessageReactionAdd(message.ChannelID, message.ID, emojiId)
+		if err != nil {
+			return errors.New("could not add a reaction to message: " + err.Error())
 		}
 	}
 
