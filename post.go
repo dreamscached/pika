@@ -25,7 +25,9 @@ func (e *NoImagesError) Error() string {
 
 func getImageURLs(message *discordgo.Message) []*Image {
 	images := make([]*Image, 0, 1) // There generally would be just one
-	for _, attachment := range message.Attachments {
+	for i := range message.Attachments {
+		attachment := message.Attachments[i]
+
 		if attachment.Width*attachment.Height > 0 { // Images cannot have zero dimensions
 			images = append(images, &Image{
 				URL:    attachment.URL,
@@ -35,7 +37,8 @@ func getImageURLs(message *discordgo.Message) []*Image {
 		}
 	}
 
-	for _, embed := range message.Embeds {
+	for i := range message.Embeds {
+		embed := message.Embeds[i]
 		if embed.Type == discordgo.EmbedTypeImage {
 			images = append(images, &Image{
 				URL:    embed.URL,
@@ -61,7 +64,9 @@ func NewPost(session *discordgo.Session, message *discordgo.Message) error {
 		return &NoImagesError{Message: message}
 	}
 
-	for _, image := range images {
+	for i := range images {
+		image := images[i]
+
 		var size string
 		res, err := http.Head(image.URL)
 		if err != nil {
